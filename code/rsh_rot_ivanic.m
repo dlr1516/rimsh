@@ -7,6 +7,12 @@ function [Ml, M] = rsh_rot_ivanic(R, lmax)
 % Direct determination by recursion", Journal of Physical Chemistry, 
 % 1995, 100(15), 6342-6347.
 %
+% and their errata corrige:
+%
+% Ivanic, Ruedenberg, "Rotation matrices for real spherical harmonics. 
+% Direct determination by recursion", Journal of Physical Chemistry,
+% 1998, 102(45), 9099-9100.
+%
 % INPUTS:
 % - R: the 3D rotation matrix applied to the reference frame of SH
 % - lmax: maximum band of spherical harmonics
