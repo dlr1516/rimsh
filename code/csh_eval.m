@@ -1,4 +1,4 @@
-function [Ycsh,Theta,Phi] = rsh_eval(lmax, theta, phi)
+function [Ycsh,Theta,Phi] = csh_eval(lmax, theta, phi)
 % CSH_EVAL
 % It computes the value of Complex Spherical Harmonics (CSH). 
 % It can be called in two ways according to the number of arguments.
