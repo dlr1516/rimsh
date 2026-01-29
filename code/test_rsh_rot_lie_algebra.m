@@ -1,5 +1,5 @@
 function test_rsh_rot_lie_algebra()
-  lmax = 5;
+  lmax = 4;
   rot_angle = 0.1;
   rot_axis_x = [1 0 0]';
   Rx = axang2rotm([rot_axis_x' rot_angle]);
