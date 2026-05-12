@@ -18,7 +18,7 @@ pb = pi/180 * (224);
 b = [cos(pb)*sin(tb), sin(pb)*sin(tb), cos(tb)]';
 theta_b = (pi/180)*(-34);
 Rb = axang2rotm([b' theta_b]);
-B =theta_b *(b(1) * Lx + b(2) * Ly + b(3) * Lz);
+B = theta_b *(b(1) * Lx + b(2) * Ly + b(3) * Lz);
 Mb = expm(B);
 invMb = expm(-B);
 
@@ -27,7 +27,32 @@ sim_prod_AB_1 = Ma * B * invMa;
 lb_AB = (A * B - B * A);
 lb_AAB = (A * lb_AB - lb_AB * A);
 sim_prod_AB_2 = B + sin(theta_a) / theta_a * lb_AB + (1-cos(theta_a)) / (theta_a^2) * lb_AAB;
+sim_prod_AB_3 = expm(lb_AB);
 disp('exp(B) * A * exp(-B):')
 disp(sim_prod_AB_1)
 disp('B + sin(a)/a * [A,B] + (1-cos(a))/a^2 * [A, [A,B]]:')
 disp(sim_prod_AB_2)
+disp('exp([A,B]):')
+disp(sim_prod_AB_3)
+
+% Finding C s.t. exp(C) A exp(-C) is anti-diagonal
+z = [0, 0, 1]';
+c = cross(a,z);
+c = c / norm(c);
+theta_c = acos(a(3));
+C = theta_c * (c(1) * Lx + c(2) * Ly + c(3) * Lz);
+Mc = expm(C);
+A_diag = Mc * A * Mc' ./ theta_a;
+disp('anti-diagonalized A, A_diag:')
+disp(A_diag)
+
+% Direct computation of exp(A)
+I = eye(size(A));
+A2 = A*A;
+A3 = A2*A;
+Ma2 = I ...
+     + (sin(theta_a)/theta_a) * A ...
+     + ((1-cos(theta_a))/theta_a^2) * A2 ...
+     + ((theta_a - sin(theta_a))/theta_a^3) * A3;
+disp(Ma)
+disp(Ma2)

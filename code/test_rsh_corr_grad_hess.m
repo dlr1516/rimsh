@@ -27,13 +27,15 @@ function test_rsh_corr_grad_hess()
   rot_axis_gt = [cos(pw)*sin(tw), sin(pw)*sin(tw), cos(tw)]';
   rot_angle_gt = (pi/180) * (25);
   Rgt = axang2rotm([rot_axis_gt' rot_angle_gt]);
+  coeffs_rot = zeros(length(coeffs_dst),1);
   % Test groundtruth
   [~, Mgt] = rsh_rot_ivanic(Rgt, lmax);
   for l = 1:lmax
-    idx= sh_lm_to_index(l,-l:l);
+    idx = sh_lm_to_index(l,-l:l);
     s = coeffs_src(idx);
     d = coeffs_dst(idx);
     d_pred = Mgt{l+1} * s;
+    coeffs_rot(idx) = d_pred;
     disp(['l ' num2str(l) ': coeffs src | rotated src | dst'])
     disp([s, d_pred, d]);
 
@@ -44,12 +46,14 @@ function test_rsh_corr_grad_hess()
     %disp([Mgt{l+1}; Mlie])
   end
 
-  % Computetation of gradient
+  % Computation of gradient
   [g,H] = rsh_corr_grad_hess(coeffs_src, coeffs_dst, lmax);
   disp('gradient')
   disp(g)
   disp('Hessian')
   disp(H)
+  disp('eigenvalues of Hessian')
+  disp(eig(H))
 
   %
   disp('gt rotation lie params:')
