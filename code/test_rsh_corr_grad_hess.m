@@ -26,7 +26,7 @@ function test_rsh_corr_grad_hess()
   pw = pi/180 * (128);
   rot_axis_gt = [cos(pw)*sin(tw), sin(pw)*sin(tw), cos(tw)]';
   rot_angle_gt = (pi/180) * (25);
-  Rgt = axang2rotm([rot_axis_gt' rot_angle_gt]);
+  Rgt = axang2rotm([rot_axis_gt', rot_angle_gt]);
   coeffs_rot = zeros(length(coeffs_dst),1);
   % Test groundtruth
   [~, Mgt] = rsh_rot_ivanic(Rgt, lmax);
@@ -38,26 +38,28 @@ function test_rsh_corr_grad_hess()
     coeffs_rot(idx) = d_pred;
     disp(['l ' num2str(l) ': coeffs src | rotated src | dst'])
     disp([s, d_pred, d]);
-
-    %[Lx, Ly, Lz] = rsh_lie_generator(l);
-    %Omega = (rot_axis_gt(1) * Lx + rot_axis_gt(2) * Ly + rot_axis_gt(3) * Lz);
-    %Mlie = expm(rot_angle_gt * Omega);
-    %disp('Mgt | Mlie')
-    %disp([Mgt{l+1}; Mlie])
+    disp(['norm s ' num2str(norm(s)) ', d ' num2str(norm(d))])
   end
 
-  % Computation of gradient
-  [g,H] = rsh_corr_grad_hess(coeffs_src, coeffs_dst, lmax);
-  disp('gradient')
-  disp(g)
-  disp('Hessian')
-  disp(H)
-  disp('eigenvalues of Hessian')
-  disp(eig(H))
-
-  %
-  disp('gt rotation lie params:')
-  disp(rot_angle_gt * rot_axis_gt)
-  x = H \ (-g)
-
+  disp('------------------------------------------------------------------')
+  disp('Computing MAX of Correlation: R = max sum_{l} d_l^T * M_l(R) * s_l')
+  
+  % The initial guess x_init can be expressed in two forms (bot supported):
+  % a) x_init as a 3D vector with the Lie parameters of rotation (aka 
+  %    Rodrigues parameters, i.e. rotation axis multiplied by the angle);
+  % b) x_init as a rotation matrix.
+  % The user can set the most convenient one. 
+  x_init = [0, 0, 0]';
+  % Initial guess close to the known solution Rgt
+  %ax_diff = [3 1 2];
+  %ax_diff = ax_diff / norm(ax_diff);
+  %x_init = Rgt * axang2rotm([ax_diff, (pi/180)*(5)])
+  data.lmax = lmax;
+  [Ropt, data] = rsh_opt_newton_so3(lmax, coeffs_src, coeffs_dst, x_init, data);
+  disp('Ropt | Rgt')
+  disp([Ropt, Rgt])
+  [f_gt, g_gt, H_gt] = rsh_corr_grad_hess(lmax, coeffs_src, coeffs_dst, Rgt);
+  disp(['function in Rgt: ' num2str(f_gt)])
+  disp('gradient in Rgt, g_gt')
+  disp(g_gt)
 end
