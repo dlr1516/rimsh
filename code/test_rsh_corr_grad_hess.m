@@ -42,6 +42,11 @@ function test_rsh_corr_grad_hess()
   end
 
   disp('------------------------------------------------------------------')
+  disp('Estimation of initial guess')
+  [x_init, R_init] = rsh_corr_init_guess(lmax, coeffs_src, coeffs_dst);
+
+
+  disp('------------------------------------------------------------------')
   disp('Computing MAX of Correlation: R = max sum_{l} d_l^T * M_l(R) * s_l')
   
   % The initial guess x_init can be expressed in two forms (bot supported):
@@ -56,8 +61,8 @@ function test_rsh_corr_grad_hess()
   %x_init = Rgt * axang2rotm([ax_diff, (pi/180)*(5)])
   data.lmax = lmax;
   [Ropt, data] = rsh_opt_newton_so3(lmax, coeffs_src, coeffs_dst, x_init, data);
-  disp('Ropt | Rgt')
-  disp([Ropt, Rgt])
+  disp('Ropt | Rgt | R_init')
+  disp([Ropt, Rgt, R_init])
   [f_gt, g_gt, H_gt] = rsh_corr_grad_hess(lmax, coeffs_src, coeffs_dst, Rgt);
   disp(['function in Rgt: ' num2str(f_gt)])
   disp('gradient in Rgt, g_gt')
