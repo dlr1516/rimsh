@@ -3,7 +3,7 @@ function [Ropt, data] = rsh_opt_newton_so3(lmax, rsh_src, rsh_dst, x_init, data)
 %
 
 if nargin < 5
-    opts = struct();
+    data = struct();
 end
 
 % Parameters of newton optimization in struct data
