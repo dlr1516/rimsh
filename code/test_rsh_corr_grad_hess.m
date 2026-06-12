@@ -67,4 +67,8 @@ function test_rsh_corr_grad_hess()
   disp(['function in Rgt: ' num2str(f_gt)])
   disp('gradient in Rgt, g_gt')
   disp(g_gt)
+
+  rsh_plot(coeffs_src, 180, 'RSH src');
+  figure
+  rsh_plot(coeffs_dst, 180, 'RSH dst');
 end
