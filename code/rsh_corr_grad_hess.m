@@ -31,7 +31,7 @@ function [f, g, H] = rsh_corr_grad_hess(lmax, rsh_src, rsh_dst, x)
     end
     for j = 1:3
       for k = j+1:3
-        Inc = d' * (L(:,:,j) * L(:,:,k) * L(:,:,k) * L(:,:,j)) * st ./ 2;
+        Inc = d' * (L(:,:,j) * L(:,:,k) + L(:,:,k) * L(:,:,j)) * st ./ 2;
         H(j,k) = H(j,k) + Inc;
         if j ~= k
            H(k,j) = H(k,j) + Inc;
