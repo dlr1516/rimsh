@@ -43,7 +43,7 @@ function [x_init, R_init] = rsh_corr_init_guess(lmax, rsh_src, rsh_dst)
     A = [A; 
          Lx * s, Ly * s, Lz * s];
     b = [b; 
-         d - s]
+         d - s];
   end
   x_init = A \ b;
   R_init = exp_SO3(x_init); 
