@@ -43,7 +43,13 @@ function test_rsh_corr_grad_hess()
 
   disp('------------------------------------------------------------------')
   disp('Estimation of initial guess')
-  [x_init, R_init] = rsh_corr_init_guess(lmax, coeffs_src, coeffs_dst);
+  [x_init, R_init] = rsh_corr_init_guess_2nd(lmax, coeffs_src, coeffs_dst);
+
+  disp('Rgt')
+  disp(Rgt)
+  x_gt = log_SO3(Rgt);
+  disp(['x_gt: angle[deg] ' num2str(180/pi * norm(x_gt)) ' axis'])
+  disp(x_gt / norm(x_gt)) 
 
 
   disp('------------------------------------------------------------------')
