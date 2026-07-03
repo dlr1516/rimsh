@@ -56,3 +56,24 @@ Ma2 = I ...
      + ((theta_a - sin(theta_a))/theta_a^3) * A3;
 disp(Ma)
 disp(Ma2)
+
+% Verification addition theorem
+theta1 = pi/180 * (30);
+phi1 = pi/180 * (-123);
+theta2 = pi/180 * (-42);
+phi2 = pi/180 * (86);
+u1 = [sin(theta1) * cos(phi1); sin(theta1) * sin(phi1); cos(theta1)];
+u2 = [sin(theta2) * cos(phi2); sin(theta2) * sin(phi2); cos(theta2)];
+Y1 = rsh_eval(lmax, u1);
+Y2 = rsh_eval(lmax, u2);
+lt = 2
+c = Y1(sh_lm_to_index(lt,-lt):sh_lm_to_index(lt,lt));
+Y2_l = Y2(sh_lm_to_index(lt,-lt):sh_lm_to_index(lt,lt));
+P_l = legendre_poly(lt, u1' * u2);
+sum_l = 4*pi / (2 * lt + 1) * (Y1_l' * Y2_l)
+disp('u1^T * u2 | acos(u1^T * u2) [deg]')
+disp([u1' * u2, 180/pi*acos(u1' * u2)])
+disp('P_l')
+disp(P_l)
+disp('4*pi / (2 * lt + 1) * (Y1_l^T * Y2_l)')
+disp(sum_l')
