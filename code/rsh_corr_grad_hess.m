@@ -20,18 +20,20 @@ function [f, g, H] = rsh_corr_grad_hess(lmax, rsh_src, rsh_dst, x)
     s = rsh_src(sh_lm_to_index(l,-l:l));
     d = rsh_dst(sh_lm_to_index(l,-l:l));
     M = expm(x(1) * L(:,:,1) + x(2) * L(:,:,2) + x(3) * L(:,:,3));
-    st = M * s;
+    dt = M' * d;
+    %st = M * s;
     f = f + d' * M * s;
-    %disp('[src | dst]')
-    %disp([s, d])
+    %disp('[s | dt]')
+    %disp([s, dt])
+    %disp(['dt^T * Lx * s ' num2str(dt' * L(:,:,1) * s)])
     % Gradient
     for j = 1:3
-      g(j) = g(j) + d' * L(:,:,j) * st;
+      g(j) = g(j) + dt' * L(:,:,j) * s;
       %disp(['g(' num2str(j) ') l ' num2str(l) ': incr ' num2str(d' * L(:,:,j) * s)])
     end
     for j = 1:3
       for k = j+1:3
-        Inc = d' * (L(:,:,j) * L(:,:,k) + L(:,:,k) * L(:,:,j)) * st ./ 2;
+        Inc = dt' * (L(:,:,j) * L(:,:,k) + L(:,:,k) * L(:,:,j)) * s ./ 2;
         H(j,k) = H(j,k) + Inc;
         if j ~= k
            H(k,j) = H(k,j) + Inc;

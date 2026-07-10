@@ -77,3 +77,17 @@ disp('P_l')
 disp(P_l)
 disp('4*pi / (2 * lt + 1) * (Y1_l^T * Y2_l)')
 disp(sum_l')
+
+% Testing bounds of 
+ars_filename_src = '/home/dario/workspace/rimsh/ars3d_2026_06_24_15_46_19/ars3d_cloud_dragon_vrip_04_noise000_occl000_rand000_20260605_1535_59.mat';
+load(ars_filename_src, "ars_coeffs");
+load(ars_filename_src, "R_gt");
+ars_coeffs_src = ars_coeffs;
+R_src = R_gt;
+
+ars_filename_dst = '/home/dario/workspace/rimsh/ars3d_2026_06_24_15_46_19/ars3d_cloud_dragon_vrip_07_noise000_occl000_rand000_20260605_1535_59.mat';
+load(ars_filename_dst, "ars_coeffs");
+load(ars_filename_dst, "R_gt");
+ars_coeffs_dst = ars_coeffs;
+R_dst = R_gt;
+
