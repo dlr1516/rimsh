@@ -46,6 +46,12 @@ A_diag = Mc * A * Mc' ./ theta_a;
 disp('anti-diagonalized A, A_diag:')
 disp(A_diag)
 
+% Antidiagonalization using [F] = rsh_rot_to_z(l, u)
+[Fa] = rsh_rot_to_z(lmax, a); 
+A_diag2 = Fa' * A * Fa;
+disp('anti-diagonalized A: A_diag2')
+disp(A_diag2)
+
 % Direct computation of exp(A)
 I = eye(size(A));
 A2 = A*A;
@@ -67,7 +73,7 @@ u2 = [sin(theta2) * cos(phi2); sin(theta2) * sin(phi2); cos(theta2)];
 Y1 = rsh_eval(lmax, u1);
 Y2 = rsh_eval(lmax, u2);
 lt = 2
-c = Y1(sh_lm_to_index(lt,-lt):sh_lm_to_index(lt,lt));
+Y1_l = Y1(sh_lm_to_index(lt,-lt):sh_lm_to_index(lt,lt));
 Y2_l = Y2(sh_lm_to_index(lt,-lt):sh_lm_to_index(lt,lt));
 P_l = legendre_poly(lt, u1' * u2);
 sum_l = 4*pi / (2 * lt + 1) * (Y1_l' * Y2_l)
@@ -77,6 +83,9 @@ disp('P_l')
 disp(P_l)
 disp('4*pi / (2 * lt + 1) * (Y1_l^T * Y2_l)')
 disp(sum_l')
+
+
+
 
 % Testing bounds of 
 ars_filename_src = '/home/dario/workspace/rimsh/ars3d_2026_06_24_15_46_19/ars3d_cloud_dragon_vrip_04_noise000_occl000_rand000_20260605_1535_59.mat';
