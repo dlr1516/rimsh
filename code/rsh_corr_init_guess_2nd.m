@@ -24,6 +24,7 @@ function [x_init, R_init] = rsh_corr_init_guess_2nd(lmax, rsh_src, rsh_dst)
 %
   Hs = zeros(3,3);
   Hd = zeros(3,3);
+  RotAxes = zeros(3,0);
   for l=1:lmax    % TODO: start with single band l do the same for l=0:lmax and sum teh result
     L = zeros(2*l+1,2*l+1,3);
     [L(:,:,1), L(:,:,2), L(:,:,3)] = rsh_lie_generator(l);
@@ -41,6 +42,11 @@ function [x_init, R_init] = rsh_corr_init_guess_2nd(lmax, rsh_src, rsh_dst)
     end
     Hs = Hs + IncHs;
     Hd = Hd + IncHd;
+    if mod(l,2) == 0
+      a = [d' * L(:,:,1) * s; d' * L(:,:,2) * s; d' * L(:,:,3) * s];
+      a = a / norm(a);
+      RotAxes = [RotAxes, a];
+    end
   end
   [Vs, Ds] = eig(Hs);
   [Vd, Dd] = eig(Hd);
@@ -56,4 +62,7 @@ function [x_init, R_init] = rsh_corr_init_guess_2nd(lmax, rsh_src, rsh_dst)
   disp(R_init)
   disp(['x_init: angle[deg] ' num2str(180/pi * norm(x_init)) ' axis'])
   disp(x_init / norm(x_init)) 
+
+  disp('RotAxes')
+  disp(RotAxes)
 return

@@ -27,17 +27,24 @@ function test_rsh_corr_grad_hess()
   rot_axis_gt = [cos(pw)*sin(tw), sin(pw)*sin(tw), cos(tw)]';
   rot_angle_gt = (pi/180) * (25);
   Rgt = axang2rotm([rot_axis_gt', rot_angle_gt]);
+  x_gt = log_SO3(Rgt);
+  theta_gt = norm(x_gt);
+  x_gt_antip = (pi - theta_gt) * x_gt / theta_gt;
+  R_gt_antip = exp_SO3(x_gt_antip);
+
   coeffs_rot = zeros(length(coeffs_dst),1);
   % Test groundtruth
   [~, Mgt] = rsh_rot_ivanic(Rgt, lmax);
+  [~, Mgt_antip] = rsh_rot_ivanic(R_gt_antip, lmax);
   for l = 1:lmax
     idx = sh_lm_to_index(l,-l:l);
     s = coeffs_src(idx);
     d = coeffs_dst(idx);
     d_pred = Mgt{l+1} * s;
+    d_antip = Mgt_antip{l+1} * s;
     coeffs_rot(idx) = d_pred;
-    disp(['l ' num2str(l) ': coeffs src | rotated src | dst'])
-    disp([s, d_pred, d]);
+    disp(['l ' num2str(l) ': coeffs src | rotated src | dst | d_antip'])
+    disp([s, d_pred, d, d_antip]);
     disp(['norm s ' num2str(norm(s)) ', d ' num2str(norm(d))])
   end
 
@@ -47,7 +54,6 @@ function test_rsh_corr_grad_hess()
 
   disp('Rgt')
   disp(Rgt)
-  x_gt = log_SO3(Rgt);
   disp(['x_gt: angle[deg] ' num2str(180/pi * norm(x_gt)) ' axis'])
   disp(x_gt / norm(x_gt)) 
 

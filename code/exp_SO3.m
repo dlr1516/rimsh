@@ -1,4 +1,5 @@
 function [R] = exp_SO3(x)
+  assert(length(x) == 3)
   theta = norm(x);
   if theta < 1e-6
     R = eye(3);
