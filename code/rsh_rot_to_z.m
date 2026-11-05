@@ -92,13 +92,14 @@ function [F] = rsh_rot_to_z(l, u)
 
     % Recurrence for m = 0,1,...,l-1
     for m = 0:(l-1)
-        Nm = sqrt((l - m) * (l + m + 1));
+        m
+        Nm = sqrt((l - m) * (l + m + 1))
 
-        a_curr = a{m+1};
-        b_curr = b{m+1};
+        a_curr = a{m+1}
+        b_curr = b{m+1}
 
-        a_next = (L1 * a_curr - L2 * b_curr) / Nm;
-        b_next = (L1 * b_curr + L2 * a_curr) / Nm;
+        a_next = (L1 * a_curr - L2 * b_curr) / Nm
+        b_next = (L2 * a_curr + L1 * b_curr) / Nm
 
         % Re-orthogonalize lightly against previously built columns
         % to control numerical drift
