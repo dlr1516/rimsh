@@ -60,17 +60,17 @@ function [F] = rsh_rot_to_z(l, u)
 
     Lu = (ux * Lx + uy * Ly + uz * Lz) / theta;
 
-    % Build A and B defining L_+^(n) = A + i B
+    % Build L1 and L2 defining L_+^(n) = L1 + i L2
     if rho > 1e-14
-        A = (-uy * Lx + ux * Ly) / rho;
-        B = (-ux * uz * Lx - uy * uz * Ly + rho^2 * Lz) / (theta * rho);
+        L1 = (-uy * Lx + ux * Ly) / rho;
+        L2 = (-ux * uz * Lx - uy * uz * Ly + rho^2 * Lz) / (theta * rho);
     else
         % Axis = +/- z
-        A = Lx;
+        L1 = Lx;
         if uz >= 0
-            B = Ly;
+            L2 = Ly;
         else
-            B = -Ly;
+            L2 = -Ly;
         end
     end
 
@@ -94,11 +94,11 @@ function [F] = rsh_rot_to_z(l, u)
     for m = 0:(l-1)
         Nm = sqrt((l - m) * (l + m + 1));
 
-        am = a{m+1};
-        bm = b{m+1};
+        a_curr = a{m+1};
+        b_curr = b{m+1};
 
-        a_next = (A * am - B * bm) / Nm;
-        b_next = (A * bm + B * am) / Nm;
+        a_next = (L1 * a_curr - L2 * b_curr) / Nm;
+        b_next = (L1 * b_curr + L2 * a_curr) / Nm;
 
         % Re-orthogonalize lightly against previously built columns
         % to control numerical drift
@@ -137,19 +137,8 @@ function [F] = rsh_rot_to_z(l, u)
     end
 
     % Assemble F in the order:
-    % [sqrt(2)a_l, sqrt(2)b_l, ..., sqrt(2)a_1, sqrt(2)b_1, a_0]
+    % [sqrt(2)a_l, ..., sqrt(2)a_1, a_0, sqrt(2)b_1, ..., sqrt(2)b_l]
     F = zeros(n, n);
-    col = 1;
-
-    %for m = l:-1:1
-    %    F(:, col) = sqrt(2) * a{m+1};
-    %    col = col + 1;
-    %    F(:, col) = sqrt(2) * b{m+1};
-    %    col = col + 1;
-    %end
-    %
-    %F(:, col) = a0;
-
     F(:,l+1) = a0;
     for m = l:-1:1
         F(:,l+1-m) = sqrt(2) * a{m+1};
