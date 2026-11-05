@@ -48,7 +48,7 @@ disp(A_diag)
 
 % Antidiagonalization using [F] = rsh_rot_to_z(l, u)
 [Fa] = rsh_rot_to_z(lmax, a); 
-A_diag2 = Fa' * A * Fa;
+A_diag2 = Fa' * A * Fa ./ theta_a;
 disp('anti-diagonalized A: A_diag2')
 disp(A_diag2)
 

@@ -26,136 +26,80 @@ function [F] = rsh_rot_to_z(l, u)
 %          sqrt(2)*a_1, sqrt(2)*b_1, a_0]
 %
 %   with v_m = a_m + i b_m and U v_m = i m theta v_m.
-
     u = u(:);
-    if numel(u) ~= 3
-        error('u must be a 3-vector.');
-    end
-
-    % Band dimension
     n = 2*l + 1;
 
-    % Trivial case l = 0
     if l == 0
-        F = 1;
-        return;
+        Fa = 1; return;
     end
 
-    % Rotation magnitude
     theta = norm(u);
-
-    % No rotation: F is not unique. Return identity.
     if theta < 1e-14
-        F = eye(n);
-        return;
+        Fa = eye(n); return;
     end
 
-    ux = u(1);
-    uy = u(2);
-    uz = u(3);
-    rho = hypot(ux, uy);
-
-    % RSH generators for this band
+    axis = u / theta;
     [Lx, Ly, Lz] = rsh_lie_generator(l);
+    G = axis(1)*Lx + axis(2)*Ly + axis(3)*Lz;   % U / theta
 
-    % Build A and B defining L_+^(n) = A + i B
-    if rho > 1e-14
-        A = (-uy * Lx + ux * Ly) / rho;
-        B = (-ux * uz * Lx - uy * uz * Ly + rho^2 * Lz) / (theta * rho);
-    else
-        % Axis = +/- z
-        A = Lx;
-        if uz >= 0
-            B = Ly;
-        else
-            B = -Ly;
+    % v0
+    v_all = rsh_eval(l, axis);
+    idx   = rsh_lm_to_index(l, -l:l);
+    a0    = v_all(idx);
+    a0    = a0(:) / norm(a0);
+
+    % complex eigenvectors of G
+    [V, D] = eig(G);
+    evals  = diag(D);
+
+    a = cell(l,1);
+    b = cell(l,1);
+
+    for m = 1:l
+        [~, j] = min(abs(evals - 1i*m));
+        v = V(:,j);
+        v = v / norm(v);
+
+        a_m = real(v);
+        b_m = imag(v);
+
+        % orthonormalize the pair
+        a_m = a_m / norm(a_m);
+        b_m = b_m - (a_m' * b_m) * a_m;
+        b_m = b_m / norm(b_m);
+
+        % ---- sign rule: enforce G*a_m = -m*b_m ----
+        if b_m' * G * a_m > 0
+            b_m = -b_m;
         end
+
+        a{m} = a_m;
+        b{m} = b_m;
     end
 
-    % a0 = v0 from RSH evaluation along axis u
-    v_all = rsh_eval(l, u);
-    idx0 = sh_lm_to_index(l, -l:l);
-    a0 = v_all(idx0);
-    a0 = a0(:);
-
-    % Normalize a0
-    a0 = a0 / norm(a0);
-
-    % Storage for a_m, b_m
-    a = cell(l+1, 1);
-    b = cell(l+1, 1);
-
-    a{1} = a0;              % corresponds to m = 0
-    b{1} = zeros(n, 1);     % b_0 = 0
-
-    % Recurrence for m = 0,1,...,l-1
-    for m = 0:(l-1)
-        Nm = sqrt((l - m) * (l + m + 1));
-
-        am = a{m+1};
-        bm = b{m+1};
-
-        a_next = (A * am - B * bm) / Nm;
-        b_next = (A * bm + B * am) / Nm;
-
-        % Re-orthogonalize lightly against previously built columns
-        % to control numerical drift
-        for k = 1:m
-            a_next = a_next - (a{k+1}' * a_next) * a{k+1} ...
-                            - (b{k+1}' * a_next) * b{k+1};
-            b_next = b_next - (a{k+1}' * b_next) * a{k+1} ...
-                            - (b{k+1}' * b_next) * b{k+1};
-        end
-        a_next = a_next - (a0' * a_next) * a0;
-        b_next = b_next - (a0' * b_next) * a0;
-
-        % Normalize so that [sqrt(2)a_m, sqrt(2)b_m] becomes orthonormal
-        sa = norm(a_next);
-        sb = norm(b_next);
-
-        if sa < 1e-14 || sb < 1e-14
-            error('Degenerate recurrence at m = %d. Check generator convention.', m+1);
-        end
-
-        % Average the two norms to preserve pair symmetry
-        s = 0.5 * (sa + sb);
-        a_next = a_next / s;
-        b_next = b_next / s;
-
-        % Enforce orthogonality inside the pair
-        b_next = b_next - (a_next' * b_next) / (a_next' * a_next) * a_next;
-        b_next = b_next / norm(b_next) * norm(a_next);
-
-        a{m+2} = a_next;
-        b{m+2} = b_next;
-    end
-
-    % Assemble F in the order:
-    % [sqrt(2)a_l, sqrt(2)b_l, ..., sqrt(2)a_1, sqrt(2)b_1, a_0]
-    F = zeros(n, n);
+    % ---- assembly: [b_l ... b_1, a_0, a_1 ... a_l] ----
+    Fa  = zeros(n, n);
     col = 1;
 
-    %for m = l:-1:1
-    %    F(:, col) = sqrt(2) * a{m+1};
-    %    col = col + 1;
-    %    F(:, col) = sqrt(2) * b{m+1};
-    %    col = col + 1;
-    %end
-    %
-    %F(:, col) = a0;
-
-    F(:,l+1) = a0;
     for m = l:-1:1
-        F(:,l+1-m) = sqrt(2) * a{m+1};
-        F(:,l+1+m) = sqrt(2) * b{m+1};
+        Fa(:,col) = b{m};  col = col + 1;
+    end
+    Fa(:,col) = a0;        col = col + 1;
+    for m = 1:l
+        Fa(:,col) = a{m};  col = col + 1;
     end
 
-    % Final orthogonalization/polar correction for numerical robustness
-    [Q, ~] = qr(F, 0);
-    F = Q;
+    Fa = sqrt(2) * Fa;      % a_m, b_m already normalized individually
+    Fa(:, l+1) = a0;        % a_0 must NOT be scaled
 
-    % Optional sign fix: enforce last column to align with a0
-    if F(:, end)' * a0 < 0
-        F(:, end) = -F(:, end);
+    % ---- final safety sign check on the anti-diagonal ----
+    L = Fa' * G * Fa;
+    for m = 1:l
+        r = l + 1 - m;
+        c = l + 1 + m;
+        if L(r, c) < 0
+            Fa(:, r) = -Fa(:, r);
+        end
     end
 end
+

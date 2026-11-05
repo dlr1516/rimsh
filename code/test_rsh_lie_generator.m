@@ -1,4 +1,4 @@
-%function test_rsh_lie_generator()
+%fclcunction test_rsh_lie_generator()
   lmax = 3;
 
   % Creates a rotation given its rotation axis and angle
@@ -10,9 +10,15 @@
   Rw = axang2rotm([rot_axis_w' rot_angle_w]);
 
   % using Ivanic rotation formula
-  [Ml_w1] = rsh_rot_ivanic(Rw, lmax);
+  [Ml_w1, M_w1] = rsh_rot_ivanic(Rw, lmax);
   disp('Ml_w according to Ivanic');
   disp(Ml_w1);
+
+  % using Pinchon rotation formula
+  eul_zyz = rotm2eul(Rw, 'ZYZ');
+  [Ml_w3, M_w3] = rsh_rot_pinchon(eul_zyz, lmax);
+  disp('Ml_w according to Pinchon');
+  disp(Ml_w3);
 
   % Using Lie algebra
   [Lx, Ly, Lz] = rsh_lie_generator(lmax);
