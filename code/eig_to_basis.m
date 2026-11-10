@@ -16,5 +16,5 @@ function [F, D, V] = eig_to_basis(L)
   A = sqrt(2) * real(V(:, idx_up));
   B = sqrt(2) * imag(V(:, idx_down));
 
-  F = [B, c, A]             % (2n) x n : real parts over imag parts
+  F = [B, c, A];             % (2n) x n : real parts over imag parts
 end
