@@ -1,5 +1,5 @@
 % Generators of representation in l-space of Lie algebra so(3)
-lmax = 3;
+lmax = 2;
 [Lx, Ly, Lz] = rsh_lie_generator(lmax);
 
 % Rotation A: Lie algebra representation

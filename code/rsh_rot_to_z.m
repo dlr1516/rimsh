@@ -62,6 +62,9 @@ function [F] = rsh_rot_to_z(l, u)
 
     % Build L1 and L2 defining L_+^(n) = L1 + i L2
     if rho > 1e-14
+        % Original names of variables (L1 > A, L2 > B): 
+        %   A = (-uy * Lx + ux * Ly) / rho;
+        %   B = (-ux * uz * Lx - uy * uz * Ly + rho^2 * Lz) / (theta * rho);
         L1 = (-uy * Lx + ux * Ly) / rho;
         L2 = (-ux * uz * Lx - uy * uz * Ly + rho^2 * Lz) / (theta * rho);
     else
@@ -73,6 +76,19 @@ function [F] = rsh_rot_to_z(l, u)
             L2 = -Ly;
         end
     end
+
+    disp('L1 | L2, | Lu')
+    disp([L1, L2, Lu])
+    disp('[L1, L2]')
+    disp(L1 * L2 - L2 * L1)
+    disp('[L2, Lu]')
+    disp(L2 * Lu - Lu * L2)
+    disp('[Lu, L1]')
+    disp(Lu * L1 - L1 * Lu)
+
+    [F2] = eig_to_basis(Lu);
+    disp('F2')
+    disp(F2)
 
     % a0 = v0 from RSH evaluation along axis u
     v_all = rsh_eval(l, u);
@@ -92,25 +108,42 @@ function [F] = rsh_rot_to_z(l, u)
 
     % Recurrence for m = 0,1,...,l-1
     for m = 0:(l-1)
-        m
-        Nm = sqrt((l - m) * (l + m + 1))
+        disp('-------')
+        disp(['m: ' num2str(m)])
+        Nm = sqrt((l - m) * (l + m + 1));
 
-        a_curr = a{m+1}
-        b_curr = b{m+1}
+        a_curr = a{m+1};
+        b_curr = b{m+1};
 
-        a_next = (L1 * a_curr - L2 * b_curr) / Nm
-        b_next = (L2 * a_curr + L1 * b_curr) / Nm
+        v_curr = a_curr + i * b_curr;
+        disp('Lu * v_curr | i m * v_curr')
+        disp([Lu * v_curr, i * m * v_curr])
+
+        % Name mapping: am > a_curr, bm > b_curr, 
+        % a_next = (A * am - B * bm) / Nm;
+        % b_next = (A * bm + B * am) / Nm;
+        a_next = (L1 * a_curr - L2 * b_curr) / Nm;
+        b_next = (L1 * b_curr + L2 * a_curr) / Nm;
+
+        b_other = -(Lu * a_next) ./ (m+1);
+
+        disp(['v1 m: ' num2str(m) ': [a_curr, b_curr, a_next, b_next, b_other]'])
+        disp([a_curr, b_curr, a_next, b_next, b_other])
+
+        v_next = a_next + i * b_next;
+        disp('Lu * v_next | i * (m+1) * v_next')
+        disp([Lu * v_next, i * (m+1) * v_next])
 
         % Re-orthogonalize lightly against previously built columns
         % to control numerical drift
-        for k = 1:m
-            a_next = a_next - (a{k+1}' * a_next) * a{k+1} ...
-                            - (b{k+1}' * a_next) * b{k+1};
-            b_next = b_next - (a{k+1}' * b_next) * a{k+1} ...
-                            - (b{k+1}' * b_next) * b{k+1};
-        end
-        a_next = a_next - (a0' * a_next) * a0;
-        b_next = b_next - (a0' * b_next) * a0;
+        % for k = 1:m
+        %     a_next = a_next - (a{k+1}' * a_next) * a{k+1} ...
+        %                     - (b{k+1}' * a_next) * b{k+1};
+        %     b_next = b_next - (a{k+1}' * b_next) * a{k+1} ...
+        %                     - (b{k+1}' * b_next) * b{k+1};
+        % end
+        % a_next = a_next - (a0' * a_next) * a0;
+        % b_next = b_next - (a0' * b_next) * a0;
 
         % Normalize so that [sqrt(2)a_m, sqrt(2)b_m] becomes orthonormal
         sa = norm(a_next);
@@ -121,13 +154,13 @@ function [F] = rsh_rot_to_z(l, u)
         end
 
         % Average the two norms to preserve pair symmetry
-        s = 0.5 * (sa + sb);
-        a_next = a_next / s;
-        b_next = b_next / s;
+        %s = 0.5 * (sa + sb);
+        %a_next = a_next / s;
+        %b_next = b_next / s;
 
         % Enforce orthogonality inside the pair
-        b_next = b_next - (a_next' * b_next) / (a_next' * a_next) * a_next;
-        b_next = b_next / norm(b_next) * norm(a_next);
+        %b_next = b_next - (a_next' * b_next) / (a_next' * a_next) * a_next;
+        %b_next = b_next / norm(b_next) * norm(a_next);
 
         if b_next' * Lu * a_next > 0
             b_next = -b_next;

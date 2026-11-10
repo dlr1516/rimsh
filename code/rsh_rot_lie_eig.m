@@ -36,7 +36,7 @@ function [Ml, M, L] = rsh_rot_lie_eig(lmax, x)
      Mz = [cl, vz', sl;
            vz, Mz,  vz;
           -sl, vz', cl];
-    Fl = rsh_rot_to_z(l, x_hat);
+    Fl = rsh_rot_to_z3(l, x_hat);
     Ml = Fl * Mz * Fl';
     M{l+1} = Ml;
   end
