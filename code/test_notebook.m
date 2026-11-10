@@ -42,9 +42,17 @@ c = c / norm(c);
 theta_c = acos(a(3));
 C = theta_c * (c(1) * Lx + c(2) * Ly + c(3) * Lz);
 Mc = expm(C);
+disp('Mc (aka F)')
+disp(Mc)
 A_diag = Mc * A * Mc' ./ theta_a;
 disp('anti-diagonalized A, A_diag:')
 disp(A_diag)
+
+% Antidiagonalization using [F] = eig_to_basis(l, u)
+[F3] = eig_to_basis(A ./ theta_a); 
+A_diag3 = F3' * A * F3 ./ theta_a;
+disp('anti-diagonalized A: A_diag3')
+disp(A_diag3)
 
 % Antidiagonalization using [F] = rsh_rot_to_z(l, u)
 [Fa] = rsh_rot_to_z(lmax, a); 

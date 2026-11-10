@@ -77,16 +77,16 @@ function [F] = rsh_rot_to_z(l, u)
         end
     end
 
-    disp('L1 | L2, | Lu')
-    disp([L1, L2, Lu])
-    disp('[L1, L2]')
-    disp(L1 * L2 - L2 * L1)
-    disp('[L2, Lu]')
-    disp(L2 * Lu - Lu * L2)
-    disp('[Lu, L1]')
-    disp(Lu * L1 - L1 * Lu)
+    % disp('L1 | L2, | Lu')
+    % disp([L1, L2, Lu])
+    % disp('[L1, L2]')
+    % disp(L1 * L2 - L2 * L1)
+    % disp('[L2, Lu]')
+    % disp(L2 * Lu - Lu * L2)
+    % disp('[Lu, L1]')
+    % disp(Lu * L1 - L1 * Lu)
 
-    [F2] = eig_to_basis(Lu);
+    [F2, V2, D2] = eig_to_basis(Lu);
     disp('F2')
     disp(F2)
 
@@ -99,11 +99,26 @@ function [F] = rsh_rot_to_z(l, u)
     % Normalize a0
     a0 = a0 / norm(a0);
 
+    Lp = L1 + i * L2;
+    v_curr = a0;
+    V = [v_curr];
+    for m=1:l
+      v_next = Lp * v_curr;
+      v_next = v_next ./ norm(v_next);
+      V = [V, v_next];
+      v_curr = v_next;
+    end
+    disp('V from eig():')
+    disp(V2)
+    disp('V recusive:')
+    disp(V)
+
+
     % Storage for a_m, b_m
     a = cell(l+1, 1);
     b = cell(l+1, 1);
 
-    a{1} = a0;              % corresponds to m = 0
+    a{1} = -a0;              % corresponds to m = 0
     b{1} = zeros(n, 1);     % b_0 = 0
 
     % Recurrence for m = 0,1,...,l-1
@@ -125,10 +140,15 @@ function [F] = rsh_rot_to_z(l, u)
         a_next = (L1 * a_curr - L2 * b_curr) / Nm;
         b_next = (L1 * b_curr + L2 * a_curr) / Nm;
 
+        %a_next = a_next ./norm(a_next);
+        %b_next = b_next ./norm(b_next);
+
         b_other = -(Lu * a_next) ./ (m+1);
 
         disp(['v1 m: ' num2str(m) ': [a_curr, b_curr, a_next, b_next, b_other]'])
         disp([a_curr, b_curr, a_next, b_next, b_other])
+        disp('norm(a_next)')
+        disp(norm(a_next))
 
         v_next = a_next + i * b_next;
         disp('Lu * v_next | i * (m+1) * v_next')
