@@ -3,8 +3,8 @@ lmax = 2;
 [Lx, Ly, Lz] = rsh_lie_generator(lmax);
 
 % Rotation A: Lie algebra representation
-ta = pi/180 * (52);
-pa = pi/180 * (128);
+ta = pi/180 * (46);
+pa = pi/180 * (84);
 a = [cos(pa)*sin(ta), sin(pa)*sin(ta), cos(ta)]';
 theta_a = (pi/180)*(53);
 Ra = axang2rotm([a' theta_a]);
@@ -72,15 +72,15 @@ u1 = [sin(theta1) * cos(phi1); sin(theta1) * sin(phi1); cos(theta1)];
 u2 = [sin(theta2) * cos(phi2); sin(theta2) * sin(phi2); cos(theta2)];
 Y1 = rsh_eval(lmax, u1);
 Y2 = rsh_eval(lmax, u2);
-lt = 2
+lt = 2;
 Y1_l = Y1(sh_lm_to_index(lt,-lt):sh_lm_to_index(lt,lt));
 Y2_l = Y2(sh_lm_to_index(lt,-lt):sh_lm_to_index(lt,lt));
-P_l = legendre_poly(lt, u1' * u2);
-sum_l = 4*pi / (2 * lt + 1) * (Y1_l' * Y2_l)
+% P_l = legendre_poly(lt, u1' * u2);
+sum_l = 4*pi / (2 * lt + 1) * (Y1_l' * Y2_l);
 disp('u1^T * u2 | acos(u1^T * u2) [deg]')
 disp([u1' * u2, 180/pi*acos(u1' * u2)])
-disp('P_l')
-disp(P_l)
+% disp('P_l')
+% disp(P_l)
 disp('4*pi / (2 * lt + 1) * (Y1_l^T * Y2_l)')
 disp(sum_l')
 
