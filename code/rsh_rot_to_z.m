@@ -137,8 +137,8 @@ function [F] = rsh_rot_to_z(l, u)
         % Name mapping: am > a_curr, bm > b_curr, 
         % a_next = (A * am - B * bm) / Nm;
         % b_next = (A * bm + B * am) / Nm;
-        a_next = (L1 * a_curr - L2 * b_curr) / Nm;
-        b_next = (L1 * b_curr + L2 * a_curr) / Nm;
+        a_next = (L2 * a_curr - L1 * b_curr) / Nm;
+        b_next = (L2 * b_curr + L1 * a_curr) / Nm;
 
         %a_next = a_next ./norm(a_next);
         %b_next = b_next ./norm(b_next);
@@ -207,4 +207,7 @@ function [F] = rsh_rot_to_z(l, u)
     if F(:, end)' * a0 < 0
         F(:, end) = -F(:, end);
     end
+
+    disp('F | F2')
+    disp([F, F2])
 end
