@@ -99,7 +99,7 @@ function [F] = rsh_rot_to_z(l, u)
     % Normalize a0
     a0 = a0 / norm(a0);
 
-    Lp = L1 + i * L2;
+    Lp = L2 + i * L1;
     v_curr = a0;
     V = [v_curr];
     for m=1:l
@@ -118,7 +118,7 @@ function [F] = rsh_rot_to_z(l, u)
     a = cell(l+1, 1);
     b = cell(l+1, 1);
 
-    a{1} = -a0;              % corresponds to m = 0
+    a{1} = a0;              % corresponds to m = 0
     b{1} = zeros(n, 1);     % b_0 = 0
 
     % Recurrence for m = 0,1,...,l-1
