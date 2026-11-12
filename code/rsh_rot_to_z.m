@@ -58,7 +58,7 @@ function [F] = rsh_rot_to_z(l, u)
     % RSH generators for this band
     [Lx, Ly, Lz] = rsh_lie_generator(l);
 
-    Lu = (ux * Lx + uy * Ly + uz * Lz) / theta;
+    %Lu = (ux * Lx + uy * Ly + uz * Lz) / theta;
 
     % Build L1 and L2 defining L_+^(n) = L1 + i L2
     if rho > 1e-14
@@ -86,9 +86,9 @@ function [F] = rsh_rot_to_z(l, u)
     % disp('[Lu, L1]')
     % disp(Lu * L1 - L1 * Lu)
 
-    [F2, V2, D2] = eig_to_basis(Lu);
-    disp('F2')
-    disp(F2)
+    %[F2, V2, D2] = eig_to_basis(Lu);
+    % disp('F2')
+    % disp(F2)
 
     % a0 = v0 from RSH evaluation along axis u
     v_all = rsh_eval(l, u);
@@ -99,21 +99,6 @@ function [F] = rsh_rot_to_z(l, u)
     % Normalize a0
     a0 = a0 / norm(a0);
 
-    Lp = L2 + i * L1;
-    v_curr = a0;
-    V = [v_curr];
-    for m=1:l
-      v_next = Lp * v_curr;
-      v_next = v_next ./ norm(v_next);
-      V = [V, v_next];
-      v_curr = v_next;
-    end
-    disp('V from eig():')
-    disp(V2)
-    disp('V recusive:')
-    disp(V)
-
-
     % Storage for a_m, b_m
     a = cell(l+1, 1);
     b = cell(l+1, 1);
@@ -123,16 +108,16 @@ function [F] = rsh_rot_to_z(l, u)
 
     % Recurrence for m = 0,1,...,l-1
     for m = 0:(l-1)
-        disp('-------')
-        disp(['m: ' num2str(m)])
+        % disp('-------')
+        % disp(['m: ' num2str(m)])
         Nm = sqrt((l - m) * (l + m + 1));
 
         a_curr = a{m+1};
         b_curr = b{m+1};
 
-        v_curr = a_curr + i * b_curr;
-        disp('Lu * v_curr | i m * v_curr')
-        disp([Lu * v_curr, i * m * v_curr])
+        % v_curr = a_curr + i * b_curr;
+        % disp('Lu * v_curr | i m * v_curr')
+        % disp([Lu * v_curr, i * m * v_curr])
 
         % Name mapping: am > a_curr, bm > b_curr, 
         % a_next = (A * am - B * bm) / Nm;
@@ -140,47 +125,13 @@ function [F] = rsh_rot_to_z(l, u)
         a_next = (L2 * a_curr - L1 * b_curr) / Nm;
         b_next = (L2 * b_curr + L1 * a_curr) / Nm;
 
-        %a_next = a_next ./norm(a_next);
-        %b_next = b_next ./norm(b_next);
-
-        b_other = -(Lu * a_next) ./ (m+1);
-
-        disp(['v1 m: ' num2str(m) ': [a_curr, b_curr, a_next, b_next, b_other]'])
-        disp([a_curr, b_curr, a_next, b_next, b_other])
-        disp('norm(a_next)')
-        disp(norm(a_next))
-
-        v_next = a_next + i * b_next;
-        disp('Lu * v_next | i * (m+1) * v_next')
-        disp([Lu * v_next, i * (m+1) * v_next])
-
-        % Re-orthogonalize lightly against previously built columns
-        % to control numerical drift
-        % for k = 1:m
-        %     a_next = a_next - (a{k+1}' * a_next) * a{k+1} ...
-        %                     - (b{k+1}' * a_next) * b{k+1};
-        %     b_next = b_next - (a{k+1}' * b_next) * a{k+1} ...
-        %                     - (b{k+1}' * b_next) * b{k+1};
-        % end
-        % a_next = a_next - (a0' * a_next) * a0;
-        % b_next = b_next - (a0' * b_next) * a0;
-
-        % Normalize so that [sqrt(2)a_m, sqrt(2)b_m] becomes orthonormal
+        % Check for degeneracy
         sa = norm(a_next);
         sb = norm(b_next);
 
         if sa < 1e-14 || sb < 1e-14
             error('Degenerate recurrence at m = %d. Check generator convention.', m+1);
         end
-
-        % Average the two norms to preserve pair symmetry
-        %s = 0.5 * (sa + sb);
-        %a_next = a_next / s;
-        %b_next = b_next / s;
-
-        % Enforce orthogonality inside the pair
-        %b_next = b_next - (a_next' * b_next) / (a_next' * a_next) * a_next;
-        %b_next = b_next / norm(b_next) * norm(a_next);
 
         if b_next' * Lu * a_next > 0
             b_next = -b_next;
@@ -199,15 +150,11 @@ function [F] = rsh_rot_to_z(l, u)
         F(:,l+1+m) = sqrt(2) * b{m+1};
     end
 
-    % Final orthogonalization/polar correction for numerical robustness
-    % [Q, ~] = qr(F, 0);
-    % F = Q;
-
     % Optional sign fix: enforce last column to align with a0
     if F(:, end)' * a0 < 0
         F(:, end) = -F(:, end);
     end
 
-    disp('F | F2')
-    disp([F, F2])
+    % disp('F | F2')
+    % disp([F, F2])
 end
