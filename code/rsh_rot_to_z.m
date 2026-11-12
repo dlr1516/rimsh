@@ -200,8 +200,8 @@ function [F] = rsh_rot_to_z(l, u)
     end
 
     % Final orthogonalization/polar correction for numerical robustness
-    [Q, ~] = qr(F, 0);
-    F = Q;
+    % [Q, ~] = qr(F, 0);
+    % F = Q;
 
     % Optional sign fix: enforce last column to align with a0
     if F(:, end)' * a0 < 0

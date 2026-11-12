@@ -13,7 +13,7 @@
 % - M: cell array of all the RSH rotation matrices for bands from 0 to
 %      lmax and the last one M{lmax} is a copy of M. 
 function [Ml, M, L] = rsh_rot_lie_eig(lmax, x)
-   x = x(:)
+   x = x(:);
    theta = norm(x);
    if theta < 1e-14
        x_hat = zeros(3,1);
@@ -36,7 +36,7 @@ function [Ml, M, L] = rsh_rot_lie_eig(lmax, x)
      Mz = [cl, vz', sl;
            vz, Mz,  vz;
           -sl, vz', cl];
-    Fl = rsh_rot_to_z3(l, x_hat);
+    Fl = rsh_rot_to_z5(l, x_hat);
     Ml = Fl * Mz * Fl';
     M{l+1} = Ml;
   end
