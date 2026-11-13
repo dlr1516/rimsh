@@ -58,7 +58,7 @@ function [F] = rsh_rot_to_z(l, u)
     % RSH generators for this band
     [Lx, Ly, Lz] = rsh_lie_generator(l);
 
-    %Lu = (ux * Lx + uy * Ly + uz * Lz) / theta;
+    Lu = (ux * Lx + uy * Ly + uz * Lz) / theta;
 
     % Build L1 and L2 defining L_+^(n) = L1 + i L2
     if rho > 1e-14
