@@ -150,11 +150,6 @@ function [F] = rsh_rot_to_z(l, u)
         F(:,l+1+m) = sqrt(2) * b{m+1};
     end
 
-    % Optional sign fix: enforce last column to align with a0
-    if F(:, end)' * a0 < 0
-        F(:, end) = -F(:, end);
-    end
-
     % disp('F | F2')
     % disp([F, F2])
 end

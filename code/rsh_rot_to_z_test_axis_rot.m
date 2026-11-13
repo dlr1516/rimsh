@@ -128,7 +128,6 @@ function [F] = rsh_rot_to_z_test_axis_rot(l, u)
     
         % Normalize a0
         a0 = a0 / norm(a0);
-        a0 = F2(:,l+1);
     
         % Storage for a_m, b_m
         a = cell(l+1, 1);
@@ -180,13 +179,10 @@ function [F] = rsh_rot_to_z_test_axis_rot(l, u)
             Ftmp(:,l+1-m) = sqrt(2) * a{m+1};
             Ftmp(:,l+1+m) = sqrt(2) * b{m+1};
         end
-    
-        % Optional sign fix: enforce first column to align with a0
-        if Ftmp(:, 1)' * a0 < 0
-            Ftmp(:,end) = -Ftmp(:,end);
-        end
-
-        diff = Ftmp - F2;
+        
+        %exclude center column due to possible sign difference, 
+        % these columns are equals in module by definition
+        diff = (Ftmp(:,[1:l,l+2:end]) - F2(:,[1:l,l+2:end]));
 
         cost = sum(abs(diff), 'all');
 
