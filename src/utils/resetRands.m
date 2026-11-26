@@ -15,7 +15,8 @@ function resetRands(seed)
 %   generators. The sequences obtained with the same seed are therefore
 %   different from those of the old version.
 %
-%   Origin: adapted from resetRands.m of the codemeta_utils MATLAB library,
+%   Origin: adapted from resetRands.m of the codemeta_utils MATLAB library
+%   by Roberto Tron (Boston University),
 %   as distributed with TPGO-RS (codemeta_utils/math/utilities/resetRands.m),
 %   https://github.com/ErnestF22/TPGO-RS
 %   The original header carried an %%AUTORIGHTS%% license placeholder.

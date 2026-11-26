@@ -7,6 +7,9 @@ function run_tests()
 %   throws an error at the end if any check failed. Takes a few seconds.
 
   repoDir = fileparts(fileparts(mfilename('fullpath')));
+  if exist(fullfile(repoDir, 'src', 'rsh_lie_generator.m'), 'file') ~= 2
+    repoDir = fileparts(pwd);                    % fallback: run from tests/
+  end
   addpath(genpath(fullfile(repoDir, 'src')));
   rng(1);
   nFail = 0;

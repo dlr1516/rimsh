@@ -1,6 +1,20 @@
 %% EXAMPLE_BASIC_USAGE  Minimal tour of the library (runs in a few seconds).
 
-repoDir = fileparts(fileparts(mfilename('fullpath')));
+% Repository root. mfilename is empty when the file is evaluated section by
+% section (Run Section / Ctrl+Enter), so fall back to WHICH and to the
+% current folder; output paths below are then always absolute.
+repoCand = {fileparts(fileparts(mfilename('fullpath'))), ...
+            fileparts(fileparts(which('example_basic_usage'))), pwd, fileparts(pwd)};
+repoDir = '';
+for iCand = 1:numel(repoCand)
+    if ~isempty(repoCand{iCand}) && exist(fullfile(repoCand{iCand}, 'src', 'rsh_lie_generator.m'), 'file') == 2
+        repoDir = repoCand{iCand}; break;
+    end
+end
+if isempty(repoDir)
+    error('Cannot locate the repository root: cd to the repository (or to experiments/) and run again.');
+end
+clear repoCand iCand
 addpath(genpath(fullfile(repoDir, 'src')));
 
 %% 1. A function on the sphere: von Mises-Fisher density, bands 0..lmax

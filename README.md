@@ -1,8 +1,11 @@
 # RIMSH — Rotation of Real Spherical Harmonics via the Lie algebra so(3)
 
-MATLAB implementation accompanying the paper
+MATLAB implementation accompanying our paper, developed at
+RIMLab (Robotics and Intelligent Machines Laboratory), University of Parma.
 
-> **TODO: Authors**, "**TODO: Paper title**", *TODO: Journal / Conference*, 2026. DOI: [TODO](https://doi.org/TODO)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24556000.svg)](https://doi.org/10.5281/zenodo.24556000)
+
+> **If you use our work, please cite this DOI: <https://doi.org/10.5281/zenodo.24556000>**
 
 The library computes the rotation matrices of **real spherical harmonics (RSH)** expansions from the
 representation of the Lie algebra so(3) in the RSH basis. For a rotation of angle θ about the unit
@@ -111,15 +114,17 @@ figures/                     figures of the paper (generated)
 
 ## Citation
 
-If you use this code, please cite the paper (see also [`CITATION.cff`](CITATION.cff)):
+If you use our work, please cite this DOI: **<https://doi.org/10.5281/zenodo.24556000>**
+(see also [`CITATION.cff`](CITATION.cff); GitHub shows a "Cite this repository" button from it).
 
 ```bibtex
-@article{TODO_key,
-  author  = {TODO},
-  title   = {TODO},
-  journal = {TODO},
-  year    = {2026},
-  doi     = {TODO}
+@software{rimlab_rimsh_2026,
+  author    = {{RIMLab (Robotics and Intelligent Machines Laboratory), University of Parma}},
+  title     = {{RIMSH: Rotation of Real Spherical Harmonics via the Lie algebra so(3)}},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24556000},
+  url       = {https://doi.org/10.5281/zenodo.24556000}
 }
 ```
 
