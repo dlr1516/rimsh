@@ -119,7 +119,7 @@ If you use our work, please cite this DOI: **<https://doi.org/10.5281/zenodo.245
 
 ```bibtex
 @software{rimlab_rimsh_2026,
-  author    = {{RIMLab (Robotics and Intelligent Machines Laboratory), University of Parma}},
+  author    = {E. Fontana, D. Lodi Rizzini, F. Pasetti},
   title     = {{RIMSH: Rotation of Real Spherical Harmonics via the Lie algebra so(3)}},
   year      = {2026},
   publisher = {Zenodo},
