@@ -1,109 +1,134 @@
-# RIMSH — RIMLab Spherical Harmonics
-#### Copyright (C) 2026 Dario Lodi Rizzini, Ernesto Fontana, Francesco Pasetti
+# RIMSH — Rotation of Real Spherical Harmonics via the Lie algebra so(3)
 
+MATLAB implementation accompanying the paper
 
-OVERVIEW
--------------------------------------------------
+> **TODO: Authors**, "**TODO: Paper title**", *TODO: Journal / Conference*, 2026. DOI: [TODO](https://doi.org/TODO)
 
-MATLAB utilities for manipulating **Spherical Harmonics** and, in particular, for
-**rotating Real Spherical Harmonics (RSH)**.
+The library computes the rotation matrices of **real spherical harmonics (RSH)** expansions from the
+representation of the Lie algebra so(3) in the RSH basis. For a rotation of angle θ about the unit
+axis **u** (Rodrigues vector **x** = θ**u**), the matrix of band *l* is
 
-A real spherical harmonic series of degree $L$ is a vector of $(L+1)^2$ coefficients
-expanded on the real basis $Y_{lm}(\theta,\varphi)$. Rotating such a series is the
-operation that links the representation of a function to the frame it is expressed in:
-given a rotation $R \in SO(3)$, the rotated coefficients are $\mathbf{c}' = \mathbf{R}(R)\,\mathbf{c}$.
-RIMSH provides the evaluation of the basis, the construction of $\mathbf{R}(R)$, and the
-tools needed to use RSH series inside optimisation and estimation problems
-(gradients, Hessians, initial guesses, and Newton steps on $SO(3)$).
+$$
+M_l(\mathbf{x}) = \exp\big(x_1 L_x^{(l)} + x_2 L_y^{(l)} + x_3 L_z^{(l)}\big) = F_l(\mathbf{u})\, M_{l,z}(\theta)\, F_l(\mathbf{u})^\top ,
+$$
 
-The rotation matrices follow a **Lie-algebraic formulation**: the generators of the
-$so(3)$ representation acting on the degree-$L$ RSH subspace are derived from the
-differential operators of infinitesimal rotations on the sphere, and $\mathbf{R}(R)$
-is obtained through the exponential map. As an alternative that avoids a
-general-purpose matrix exponential, $\mathbf{R}(R)$ is factorised into anti-diagonal
-form — the rotation angle enters only through an elementary rotation about the
-$z$ axis, while an orthogonal similarity matrix depends only on the rotation axis.
-The formulation is free of the singularities affecting Euler-angle methods, remains
-accurate to round-off at high degrees, and makes rotation-dependent functions of RSH
-series explicitly differentiable. An implementation of the classical
-Ivanic–Ruedenberg recursion is included for comparison.
+where $L_x^{(l)}, L_y^{(l)}, L_z^{(l)}$ are sparse real generators, $F_l(\mathbf{u})$ is a real orthogonal
+matrix that depends only on the axis, and $M_{l,z}(\theta)$ is the elementary rotation about *z*
+(entries $\cos m\theta$ on the diagonal, $\pm\sin m\theta$ on the anti-diagonal).
+This **anti-diagonal factorization** (called *Lie-AD* in the paper) avoids matrix exponentials and
+complex eigen-decompositions, gives matrices that are orthogonal to round-off, and makes rotations
+about a fixed axis, closed-form derivatives and Newton alignment on SO(3) inexpensive.
 
-### Reference
+## Requirements
 
-If you use this library in academic work, please cite:
+- MATLAB R2016b or later (no toolbox needed), or GNU Octave ≥ 6 for the library and the tests.
+- The paper script `experiments/run_paper_experiments.m` uses local functions in a script and
+  `timeit`, so it needs MATLAB.
 
-> E. Fontana, D. Lodi Rizzini, F. Pasetti,
-> *A Lie-Algebraic Formulation of Real Spherical Harmonic Rotation*,
-> Zenodo, 2026. DOI: [10.5281/zenodo.24556000](https://zenodo.org/records/24556000)
-> — [PDF](https://zenodo.org/records/24556000/files/2026_rsh_rot_arxiv.pdf?download=1)
+## Quick start
+
+```matlab
+setup_path                                   % adds src/ to the path
+
+lmax = 16;
+x    = (pi/3) * [1; 1; 0] / sqrt(2);         % 60 deg about [1 1 0]/sqrt(2)
+[Ml, M] = rsh_rot_lie_eig(lmax, x);          % M{l+1}: (2l+1)x(2l+1) matrix of band l
+
+c     = von_mises_fisher_rsh_coeffs(lmax, [0;0;1], 30);   % RSH coefficients of a vMF density
+c_rot = rsh_rot_coeffs(x, c);                % rotated expansion (x or a 3x3 matrix)
+rsh_plot(c_rot, 90, 'rotated vMF');
+```
+
+A longer walk-through is in [`experiments/example_basic_usage.m`](experiments/example_basic_usage.m).
+
+## Reproducing the paper
+
+```matlab
+run('experiments/run_paper_experiments.m')
+```
+
+The script runs every experiment of the paper (convention checks, timing and accuracy vs *l*,
+rotation of von Mises–Fisher distributions, sweeps about a fixed axis, closed-form derivatives and
+Newton alignment), writes the figures to `figures/` and the numbers to
+`results/rsh_rot_experiments_results.mat`. Random draws are seeded (`rng(3)`); timings depend on the
+machine. The full run (*l* up to 64) takes from several minutes to about an hour; reduce
+`cfg.lList` for a quick check.
+
+| Figure | File |
+|---|---|
+| Computation time vs *l* | `figures/rsh_time.pdf` |
+| Discrepancy from Ivanic–Ruedenberg and orthogonality | `figures/rsh_accuracy.pdf` |
+| Rotation of von Mises–Fisher distributions | `figures/rsh_vmf.pdf` |
+| Many angles about a fixed axis | `figures/rsh_fixed_axis.pdf` |
+| Closed-form derivatives and Newton alignment | `figures/rsh_derivatives.pdf` |
+
+## Tests
+
+```matlab
+run('tests/run_tests.m')
+```
+
+Checks the commutation relations of the generators, agreement with `expm` and with the
+Ivanic–Ruedenberg recursion, orthogonality, equivariance $Y_l(R\mathbf{v}) = M_l(R)\,Y_l(\mathbf{v})$,
+the homomorphism property, rotation of closed-form vMF coefficients, gradient/Hessian against
+finite differences and Newton alignment. Runs in a few seconds in MATLAB and Octave.
+
+## Repository layout
+
+```
+src/                         core library
+  rsh_lie_generator.m        generators Lx, Ly, Lz of band l
+  rsh_rot_lie_eig.m          rotation matrices of bands 0..lmax, anti-diagonal factorization (proposed)
+  rsh_rot_to_z.m             orthogonal factor F_l(u) of the factorization
+  rsh_rot_lie.m              same matrices via expm (reference implementation)
+  rsh_rot_coeffs.m           rotate a packed RSH coefficient vector
+  rsh_eval.m, csh_eval.m     evaluate real / complex spherical harmonics
+  sh_lm_to_index.m           packed index of (l, m)
+  von_mises_fisher_rsh_coeffs.m   closed-form RSH coefficients of a vMF density
+  rsh_plot.m                 lat/lon plot of an RSH expansion
+  baselines/                 Ivanic–Ruedenberg recursion (rsh_rot_ivanic and helpers)
+  registration/              correlation, gradient/Hessian, initial guess and Newton
+                             alignment on SO(3) (experimental)
+  utils/                     exp/log maps of SO(3) and small helpers
+experiments/
+  run_paper_experiments.m    reproduces all experiments and figures of the paper
+  example_basic_usage.m      short tutorial
+  demo_von_mises_fisher.m    vMF function vs its truncated RSH series
+tests/run_tests.m            self-checks
+figures/                     figures of the paper (generated)
+```
+
+## Conventions
+
+- Coefficients of bands 0..*l*<sub>max</sub> are packed band after band, *m* = −*l*..*l*, at index
+  *l*² + *l* + *m* + 1 (`sh_lm_to_index`); total length (*l*<sub>max</sub>+1)².
+- Real SH are orthonormal on the sphere and built from MATLAB's Schmidt semi-normalized
+  `legendre(l, cos θ, 'sch')`, with sin(*m*φ) for *m* < 0 and cos(*m*φ) for *m* > 0.
+- Rotations are passed as Rodrigues vectors **x** = θ**u** or 3×3 matrices *R* = exp([**x**]<sub>×</sub>);
+  `rsh_rot_ivanic(R, l)` and `rsh_rot_lie_eig(l, log_SO3(R))` return the same matrices.
+- Known limitation: for axes at a tiny but non-zero angle ρ from ±*z*, the accuracy of `rsh_eval`
+  limits *F<sub>l</sub>* to about eps/ρ (see the note in `rsh_rot_to_z.m`).
+
+## Citation
+
+If you use this code, please cite the paper (see also [`CITATION.cff`](CITATION.cff)):
 
 ```bibtex
-@misc{rimsh2026,
-  title     = {A Lie-Algebraic Formulation of Real Spherical Harmonic Rotation},
-  author    = {Fontana, Ernesto and Lodi Rizzini, Dario and Pasetti, Francesco},
-  year      = {2026},
-  publisher = {Zenodo},
-  doi       = {10.5281/zenodo.24556000},
-  url       = {[doi.org](https://doi.org/10.5281/zenodo.24556000})
+@article{TODO_key,
+  author  = {TODO},
+  title   = {TODO},
+  journal = {TODO},
+  year    = {2026},
+  doi     = {TODO}
 }
 ```
 
+## References
 
-MAIN FUNCTIONS
--------------------------------------------------
+- J. Ivanic, K. Ruedenberg, "Rotation matrices for real spherical harmonics. Direct determination by
+  recursion", *J. Phys. Chem.* 100(15), 6342–6347, 1996; Additions and corrections, *J. Phys. Chem. A*
+  102(45), 9099–9100, 1998.
 
-### General mathematical utilities
+## License
 
-Functions shared by the real (RSH) and complex (CSH) cases, plus the
-linear-algebra helpers used throughout.
-
-| Function | Description |
-| --- | --- |
-| `sh_lm_to_index` | Map a degree/order pair $(l,m)$ to its index in the coefficient vector (and back). |
-| `sh_rot_index` | Index bookkeeping for the blocks of the RSH rotation matrix. |
-| `legendre_poly` | Evaluate the Legendre polynomial $P_l(x)$ by recurrence. |
-| `tchebychev_to_legendre_coeffs` | Convert Chebyshev coefficients into Legendre coefficients. |
-| `pnebi_eval_0` | Evaluate the associated Legendre functions $P_l^0$ used to build the RSH basis. |
-| `pnebi_eval_n` | Evaluate the associated Legendre functions $P_l^m$ of general order. |
-| `exp_SO3` | Exponential map: rotation vector in $so(3)$ → rotation matrix in $SO(3)$. |
-| `log_SO3` | Logarithm map: rotation matrix in $SO(3)$ → rotation vector in $so(3)$. |
-| `adjoint_rodrigues` | Adjoint action of $SO(3)$ on $so(3)$ in Rodrigues form. |
-| `factor_up` | Rank-one factorisation helper used by the anti-diagonal decomposition. |
-| `get_opt` | Read an option from an options struct with a default value (shared by the optimisation routines). |
-| `resetRands` | Reset the random number generator seed for reproducible experiments. |
-
-### RSH evaluation and rotation
-
-| Function | Description |
-| --- | --- |
-| `rsh_eval` | Evaluate the real spherical harmonic basis $Y_{lm}(\theta,\varphi)$ up to degree $L$. |
-| `rsh_plot` | Plot an RSH series on the sphere. |
-| `rsh_lie_generator` | Generator of the $so(3)$ representation acting on the degree-$L$ RSH subspace. |
-| `rsh_rot_coeffs` | Rotate a set of RSH coefficients by a rotation matrix. |
-| `rsh_rot_lie` | RSH rotation matrix from the Lie-algebraic formulation (exponential map). |
-| `rsh_rot_lie_eig` | Similarity matrix from the eigenvectors of the RSH rotation matrix, by a re-orthogonalised ladder recurrence. |
-| `rsh_rot_to_z` | RSH rotation matrix aligned with the $z$ axis (the similarity block of the factorisation). |
-| `rsh_rot_to_z5` | Same as `rsh_rot_to_z`, closed-form case up to degree 5. |
-| `rsh_rot_ivanic` | RSH rotation matrix by the classical Ivanic–Ruedenberg recursion (reference implementation). |
-| `rsh_rot_ivanic_coeffs` | Rotate RSH coefficients with the Ivanic–Ruedenberg recursion. |
-| `csh_eval` | Evaluate the complex spherical harmonic basis. |
-| `csh_rot_wigner` | Rotation of complex spherical harmonics through Wigner $D$-matrices. |
-
-### Use of RSH series: optimisation and modelling
-
-Higher-level routines built on the rotation machinery.
-
-| Function | Description |
-| --- | --- |
-| `rsh_corr_grad_hess` | Correlation between RSH series together with its closed-form gradient and Hessian on $SO(3)$ (via the Lie-algebraic linearisation). |
-| `rsh_corr_init_guess` | Closed-form initial guess for the rotation aligning two RSH series (first-order approximation). |
-| `rsh_corr_init_guess_2nd` | Second-order refinement of the initial guess. |
-| `rsh_corr_ub_l` | Upper bound on the correlation for a given degree $L$, used to schedule or truncate the optimisation. |
-| `rsh_opt_newton_so3` | Newton(-like) optimisation of a rotation on $SO(3)$ using `rsh_corr_grad_hess`. |
-| `rsh_project_to_so3` | Project a matrix onto $SO(3)$ (nearest rotation). |
-| `von_mises_fisher_rsh_coeffs` | RSH coefficients of a von Mises–Fisher distribution on the sphere (synthetic RSH series for tests and demos). |
-
-
-DEPENDENCIES
--------------------------------------------------
-
+Released under the [MIT License](LICENSE).

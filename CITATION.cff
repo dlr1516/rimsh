@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+title: "RIMSH: rotation of real spherical harmonics via the Lie algebra so(3)"
+type: software
+license: MIT
+repository-code: "https://github.com/TODO/rimsh"
+authors:
+  - family-names: "TODO"
+    given-names: "TODO"
+    affiliation: "University of Parma"
+preferred-citation:
+  type: article
+  title: "TODO: paper title"
+  authors:
+    - family-names: "TODO"
+      given-names: "TODO"
+  journal: "TODO"
+  year: 2026
+  doi: "TODO"
