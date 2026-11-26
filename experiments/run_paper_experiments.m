@@ -1,11 +1,12 @@
 %% RUN_PAPER_EXPERIMENTS  Reproduce the experiments and figures of the paper.
 % Experiments of Section "Computational Cost and Accuracy of RSH Rotation".
 %
-% Usage (from MATLAB, in any folder):
-%   run('<repo>/experiments/run_paper_experiments.m')
+% Usage (from MATLAB, with the repository root as current folder):
+%   run('experiments/run_paper_experiments.m')
 % The script adds src/ to the path, writes the five figures of the paper to
-% <repo>/figures/*.pdf and the numerical results to
-% <repo>/results/rsh_rot_experiments_results.mat. Set cfg.saveFigs = false to
+% figures/*.pdf and the numerical results to
+% results/rsh_rot_experiments_results.mat (both inside the repository
+% folder, created if missing). Set cfg.saveFigs = false to
 % only display the figures. A full run takes from several minutes to about an
 % hour depending on the machine (l up to 64); reduce cfg.lList for a quick run.
 % Random draws are reproducible (rng(3)); timings depend on the hardware.
@@ -37,7 +38,21 @@
 
 %% 0. Configuration
 clear; clc; rng(3);
-repoDir = fileparts(fileparts(mfilename('fullpath')));
+% Repository root. mfilename is empty when the file is evaluated section by
+% section (Run Section / Ctrl+Enter), so fall back to WHICH and to the
+% current folder; output paths below are then always absolute.
+repoCand = {fileparts(fileparts(mfilename('fullpath'))), ...
+            fileparts(fileparts(which('run_paper_experiments'))), pwd, fileparts(pwd)};
+repoDir = '';
+for iCand = 1:numel(repoCand)
+    if ~isempty(repoCand{iCand}) && exist(fullfile(repoCand{iCand}, 'src', 'rsh_lie_generator.m'), 'file') == 2
+        repoDir = repoCand{iCand}; break;
+    end
+end
+if isempty(repoDir)
+    error('Cannot locate the repository root: cd to the repository (or to experiments/) and run again.');
+end
+clear repoCand iCand
 addpath(genpath(fullfile(repoDir, 'src')));
 cfg.lList       = [1 2 3 4 6 8 12 16 24 32 48 64];  % bands to test
 cfg.nRotTime    = 100;   % rotations per timing loop for small l (time reported per rotation)
@@ -521,7 +536,7 @@ for il = 1:nL
     fprintf('%4d | %9.2e %9.2e %9.2e %9.2e             | %9.2e %9.2e %9.2e\n', cfg.lList(il), ...
         T_all(il,:), median(E(il,:,1)), median(E(il,:,2)), median(E(il,:,3)));
 end
-if ~exist(cfg.resDir, 'dir'), mkdir(cfg.resDir); end
+ensure_dir(cfg.resDir);
 save(fullfile(cfg.resDir, 'rsh_rot_experiments_results.mat'), 'cfg', 'methods', 'T_all', 'T_band', 'E', 'E_expAD', 'O', ...
      'errA', 'errR', 'dnrm', 'sgn', 'sgnAD', 'ivMode', 'csConv', 'resExp', 'resAD', 'resIv', 'errF', 'errFo', ...
      'T4coef', 'T4corr', 'T4pre', 'E4coef', 'E4corr', 'E4ang', 'E5g', 'E5H', 't5an', 't5fd', 'E5N', 'D5', 'status5');
@@ -862,6 +877,22 @@ function fig = new_fig(w, h)
     end
 end
 
+% Create folder d (and its parents) if it does not exist. exist(d, 'dir')
+% alone is not enough: for a relative name it also finds folders with that
+% name on the MATLAB path, so the check is done on the absolute path.
+function ensure_dir(d)
+    if ~(numel(d) > 0 && (d(1) == '/' || d(1) == '\' || any(d == ':')))
+        d = fullfile(pwd, d);                          % make it absolute
+    end
+    if exist(d, 'dir') ~= 7
+        [ok, msg] = mkdir(d);
+        if ~ok
+            error('Cannot create output folder %s: %s', d, msg);
+        end
+        fprintf('Created output folder %s\n', d);
+    end
+end
+
 % Applies the white style to all axes and legends of fig and saves it as
 % <cfg.figDir>/<name>.pdf (vector graphics, white background).
 function save_fig(fig, cfg, name)
@@ -872,7 +903,7 @@ function save_fig(fig, cfg, name)
     end
     set(findall(fig, 'Type', 'legend'), 'Color', 'w', 'TextColor', 'k', 'EdgeColor', [0.3 0.3 0.3]);
     if ~cfg.saveFigs, return; end
-    if ~exist(cfg.figDir, 'dir'), mkdir(cfg.figDir); end
+    ensure_dir(cfg.figDir);
     file = fullfile(cfg.figDir, [name '.pdf']);
     drawnow;
     if exist('exportgraphics', 'file')                 % R2020a+
