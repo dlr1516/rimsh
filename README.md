@@ -131,8 +131,9 @@ If you use our work, please cite this DOI: **<https://doi.org/10.5281/zenodo.245
 ## References
 
 - J. Ivanic, K. Ruedenberg, "Rotation matrices for real spherical harmonics. Direct determination by
-  recursion", *J. Phys. Chem.* 100(15), 6342–6347, 1996; Additions and corrections, *J. Phys. Chem. A*
-  102(45), 9099–9100, 1998.
+  recursion", *J. Phys. Chem.* 100(15), 6342–6347, 1996.
+- J. Ivanic, K. Ruedenberg, "Rotation matrices for real spherical harmonics. Direct determination by
+  recursion — Additions and corrections", *J. Phys. Chem. A* 102(45), 9099–9100, 1998.
 
 ## License
 
