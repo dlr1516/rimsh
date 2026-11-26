@@ -46,6 +46,7 @@ If you use this library in academic work, please cite:
   doi       = {10.5281/zenodo.24556000},
   url       = {[doi.org](https://doi.org/10.5281/zenodo.24556000})
 }
+```
 
 
 MAIN FUNCTIONS
